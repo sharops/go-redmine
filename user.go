@@ -96,6 +96,30 @@ func (c *Client) Users() ([]User, error) {
 	return r.Users, nil
 }
 
+func (c *Client) UserCurrent() (*User, error) {
+	res, err := c.Get(c.endpoint + "/users/current.json?key=" + c.apikey)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	decoder := json.NewDecoder(res.Body)
+	var r userResult
+	if res.StatusCode != 200 {
+		var er errorsResult
+		err = decoder.Decode(&er)
+		if err == nil {
+			err = errors.New(strings.Join(er.Errors, "\n"))
+		}
+	} else {
+		err = decoder.Decode(&r)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &r.User, nil
+}
+
 func (c *Client) UsersWithFilter(filter *UsersFilter) ([]User, error) {
 	uri, err := c.URLWithFilter("/users.json", filter.Filter)
 	if err != nil {

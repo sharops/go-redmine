@@ -22,8 +22,8 @@ type timeEntryRequest struct {
 
 type TimeEntry struct {
 	Id           int            `json:"id"`
-	Project      IdName         `json:"project"`
-	Issue        Id             `json:"issue"`
+	Project      IdName         `json:"project,omitempty"`
+	Issue        Id             `json:"issue,omitempty"`
 	User         IdName         `json:"user"`
 	Activity     IdName         `json:"activity"`
 	Hours        float32        `json:"hours"`
@@ -127,6 +127,11 @@ func (c *Client) TimeEntry(id int) (*TimeEntry, error) {
 
 func (c *Client) CreateTimeEntry(timeEntry TimeEntry) (*TimeEntry, error) {
 	var ir timeEntryRequest
+
+	if (timeEntry.Project == IdName{}) && (timeEntry.Issue == Id{}) {
+		return nil, errors.New("You must have at least a Project or an Issue set")
+	}
+
 	ir.TimeEntry = timeEntry
 	s, err := json.Marshal(ir)
 	if err != nil {
